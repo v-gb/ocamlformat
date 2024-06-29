@@ -329,10 +329,10 @@ let relocate_cmts_before (t : t) ~src ~sep ~dst =
   update_cmts t `Before ~f ; update_cmts t `Within ~f
 
 let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
-  let kwd_loc =
-    Option.value_exn (Source.loc_of_first_token_at src whole_loc tok)
-  in
-  relocate_cmts_before t ~src:matched_loc ~sep:kwd_loc ~dst:whole_loc
+  match Source.loc_of_first_token_at src whole_loc tok with
+  | None -> ()
+  | Some kwd_loc ->
+      relocate_cmts_before t ~src:matched_loc ~sep:kwd_loc ~dst:whole_loc
 
 let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
   let open Extended_ast in
@@ -361,15 +361,17 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
          && Source.extension_using_sugar ~name:pre ~payload:e1.pexp_loc ->
       ()
   | PStr [{pstr_desc= Pstr_eval _; pstr_loc; _}] ->
-      let kwd_loc =
+     (match
         match Source.loc_of_first_token_at src whole_loc LBRACKETPERCENT with
-        | Some loc -> loc
+        | Some loc -> Some loc
         | None -> (
           match Source.loc_of_first_token_at src whole_loc PERCENT with
-          | Some loc -> loc
-          | None -> impossible "expect token starting extension" )
-      in
-      relocate_cmts_before t ~src:pstr_loc ~sep:kwd_loc ~dst:whole_loc
+          | Some loc -> Some loc
+          | None -> None )
+      with
+      | None -> ()
+      | Some kwd_loc ->
+         relocate_cmts_before t ~src:pstr_loc ~sep:kwd_loc ~dst:whole_loc)
   | _ -> ()
 
 let relocate_wrongfully_attached_cmts t src exp =
