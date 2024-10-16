@@ -358,7 +358,8 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
         | `Auto -> `Normalize
       in
       let s =
-        if loc.loc_ghost then String.escaped orig_s
+        if String.is_prefix loc.loc_start.pos_fname ~prefix:"_migrate"
+           || loc.loc_ghost then String.escaped orig_s
         else Source.string_literal c.source preserve_or_normalize loc
       in
       Cmts.fmt c loc'
