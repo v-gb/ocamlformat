@@ -25,6 +25,8 @@
 
 type t
 
+val sexp_of_t : t -> Sexp.t
+
 val init :
   'a Extended_ast.t -> debug:bool -> Source.t -> 'a -> Cmt.t list -> t
 (** [init fragment source x comments] associates each comment in [comments]

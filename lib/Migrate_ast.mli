@@ -22,6 +22,8 @@ end
 module Position : sig
   type t = Lexing.position
 
+  val sexp_of_t : t -> Sexp.t
+
   include Comparator.S with type t := t
 
   val column : t -> int
