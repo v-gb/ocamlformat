@@ -13,6 +13,8 @@ open Migrate_ast
 
 type t
 
+val sexp_of_t : t -> Sexp.t
+
 val create_comment : string -> Location.t -> t
 
 val create_docstring : string -> Location.t -> t
