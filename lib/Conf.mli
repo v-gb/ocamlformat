@@ -11,6 +11,8 @@
 
 include module type of Conf_t
 
+val disable_version_check : bool ref
+
 val default_profile : from -> fmt_opts
 
 val default : t
