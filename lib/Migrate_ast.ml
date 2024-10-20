@@ -28,9 +28,17 @@ module Position = struct
 
   let column {pos_bol; pos_cnum; _} = pos_cnum - pos_bol
 
-  let fmt fs {pos_lnum; pos_bol; pos_cnum; pos_fname= _} =
-    if pos_lnum = -1 then Format.fprintf fs "[%d]" pos_cnum
-    else Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
+  let print_pos_fname = Option.is_some (Sys.getenv "POS_FNAME")
+
+  let fmt fs {pos_lnum; pos_bol; pos_cnum; pos_fname} =
+    if pos_lnum = -1 then
+      Format.fprintf fs "[%s%d]"
+        (if print_pos_fname then pos_fname ^ ":" else "")
+        pos_cnum
+    else
+      Format.fprintf fs "[%s%d,%d+%d]"
+        (if print_pos_fname then pos_fname ^ ":" else "")
+        pos_lnum pos_bol (pos_cnum - pos_bol)
 
   let to_string x = Format.asprintf "%a" fmt x
 
