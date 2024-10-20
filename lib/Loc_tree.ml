@@ -21,8 +21,14 @@ let of_ast fragment ast =
     else Ast_mapper.default_mapper.attribute m attr
   in
   let locs = ref [] in
-  let location _ loc =
-    locs := loc :: !locs ;
+  let location _ (loc : Location.t) =
+    (* Migrated code has very early locations, so they mostly come before the
+       ast, and get assigned early comments. We could shift those location
+       arbitrarily, but without trying, it seems like it might lead to the
+       reverse problem of final comments being assigned to random migrated
+       code. Taking out these locations entirely seems more robust. *)
+    if String.is_prefix loc.loc_start.pos_fname ~prefix:"_migrate" then ()
+    else locs := loc :: !locs ;
     loc
   in
   (* Ignore locations of arg_labels *)
