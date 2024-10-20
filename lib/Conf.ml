@@ -1483,6 +1483,8 @@ end
 
 let options = Operational.options @ Formatting.options @ options
 
+let disable_version_check = ref false
+
 let parse_line config ?(version_check = config.opr_opts.version_check.v)
     ?(disable_conf_attrs = config.opr_opts.disable_conf_attrs.v) ~from s =
   let update ~config ~from ~name ~value =
@@ -1490,8 +1492,10 @@ let parse_line config ?(version_check = config.opr_opts.version_check.v)
     let value = String.strip value in
     match (name, from) with
     | "version", `File _ ->
-        if String.equal Version.current value || not version_check then
-          Ok config
+        if
+          String.equal Version.current value
+          || !disable_version_check || not version_check
+        then Ok config
         else
           Error
             (Error.Version_mismatch {read= value; installed= Version.current})
