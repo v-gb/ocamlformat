@@ -65,6 +65,25 @@ type t =
   ; mutable remaining: Set.M(Location).t
   ; layout_cache: Layout_cache.t }
 
+let sexp_of_t t : Sexp.t =
+  let sexp_of_map name map =
+    if Map.is_empty map then None
+    else
+      Some
+        (Sexp.List
+           [ Atom name
+           ; Map.sexp_of_m__t
+               (module Location)
+               (sexp_of_list Cmt.sexp_of_t)
+               map ] )
+  in
+  List
+    (List.filter_opt
+       [ Some (Sexp.List [Atom "debug"; sexp_of_bool t.debug])
+       ; sexp_of_map "cmts_before" t.cmts_before
+       ; sexp_of_map "cmts_after" t.cmts_after
+       ; sexp_of_map "cmts_within" t.cmts_within ] )
+
 let copy
     { debug
     ; cmts_before
@@ -136,6 +155,8 @@ let infix_symbol_before src (loc : Location.t) =
 module CmtSet : sig
   type t
 
+  val sexp_of_t : t -> Sexp.t
+
   val of_list : Cmt.t list -> t
 
   val to_list : t -> Cmt.t list
@@ -154,6 +175,9 @@ module CmtSet : sig
       location or before the next one. *)
 end = struct
   type t = Cmt.t list Map.M(Position).t
+
+  let sexp_of_t t =
+    Map.sexp_of_m__t (module Position) (sexp_of_list Cmt.sexp_of_t) t
 
   let empty = Map.empty (module Position)
 
@@ -244,6 +268,8 @@ end = struct
       | [] -> impossible "by parent match" )
     | _ -> (empty, cmts)
 end
+
+let _ = CmtSet.sexp_of_t
 
 let add_cmts t position loc ?deep_loc cmts =
   if not (CmtSet.is_empty cmts) then
