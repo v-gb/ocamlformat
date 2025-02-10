@@ -27,6 +27,8 @@ type 'a t =
   | Pattern : pattern t
   | Repl_file : repl_file t
   | Documentation : Ocamlformat_odoc_parser.Ast.t t
+  | Class_field : class_field t
+  | Class_type : class_type t
 
 type any_t = Any : 'a t -> any_t [@@unboxed]
 
