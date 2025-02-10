@@ -28,6 +28,8 @@ type 'a t =
   | Pattern : pattern t
   | Repl_file : repl_file t
   | Documentation : Ocamlformat_odoc_parser.Ast.t t
+  | Class_field : class_field t
+  | Class_type : class_type t
 
 type any_t = Any : 'a t -> any_t [@@unboxed]
 
@@ -55,6 +57,8 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Pattern -> m.pat m
   | Repl_file -> List.map ~f:(m.repl_phrase m)
   | Documentation -> Fn.id
+  | Class_field -> m.class_field m
+  | Class_type -> m.class_type m
 
 module Parse = struct
   let normalize_mapper ~ocaml_version ~preserve_beginend =
@@ -329,6 +333,7 @@ module Parse = struct
         let pos = (Location.curr lexbuf).loc_start in
         let pos = {pos with pos_fname= input_name} in
         Docstring.parse_file pos str
+    | Class_field | Class_type -> failwith "unimplemented"
 end
 
 module Printast = struct
@@ -348,6 +353,8 @@ module Printast = struct
     | Pattern -> pattern
     | Repl_file -> repl_file
     | Documentation -> Docstring.dump
+    | Class_field -> class_field
+    | Class_type -> class_type
 end
 
 module Asttypes = struct
